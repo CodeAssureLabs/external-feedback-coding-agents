@@ -1,0 +1,32 @@
+pr,defect,defect_type,language,CA,rust_build_clippy,semgrep,pylint,sonarqube_community,ruff,eslint,clang_tidy,cppcheck,pmd
+PR-01,1,convention,cpp,partial,no,no,no,no,no,no,no,no,no
+PR-02,1,multiple,rust,partial,no,yes,no,no,no,no,no,no,no
+PR-02,2,multiple,rust,yes,yes,no,no,no,no,no,no,no,no
+PR-03,1,convention,rust,yes,yes,yes,no,no,no,no,no,no,no
+PR-05,1,multiple,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-05,2,multiple,cpp,partial,no,no,no,no,no,no,no,no,no
+PR-06,1,architecture rule,python,yes,no,no,no,no,no,no,no,no,no
+PR-08,1,code-visible,rust,yes,yes,no,no,no,no,no,no,no,no
+PR-09,1,convention,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-10,1,architecture rule,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-11,1,architecture rule,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-12,1,architecture rule,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-14,1,multiple,python,yes,no,no,no,no,no,no,no,no,no
+PR-14,2,multiple,python,yes,no,no,no,no,no,no,no,no,no
+PR-14,3,multiple,python,yes,no,no,no,no,no,no,no,no,no
+PR-15,1,convention,rust,yes,no,no,no,no,no,no,no,no,no
+PR-17,1,architecture rule,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-18,1,multiple,rust,partial,partial,no,no,no,no,no,no,no,no
+PR-18,2,multiple,rust,yes,no,no,no,no,no,no,no,no,no
+PR-20,1,convention,python,yes,no,no,no,no,no,no,no,no,no
+PR-21,1,architecture rule,rust,partial,partial,no,no,no,no,no,no,no,no
+PR-22,1,convention,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-23,1,architecture rule,rust,partial,partial,no,no,no,no,no,no,no,no
+PR-24,1,code-visible,python,partial,no,no,yes,partial,no,no,no,no,no
+PR-25,1,architecture rule,typescript,yes,no,no,no,no,no,no,no,no,no
+PR-26,1,code-visible,java,yes,no,no,no,no,no,no,no,no,no
+PR-27,1,architecture rule,python,yes,no,no,no,no,no,no,no,no,no
+PR-28,1,convention,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-29,1,multiple,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-29,2,multiple,cpp,yes,no,no,no,no,no,no,no,no,no
+PR-30,1,convention,rust,yes,no,no,no,no,no,no,no,no,no
