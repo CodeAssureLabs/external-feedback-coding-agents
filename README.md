@@ -14,7 +14,7 @@ The script uses only the Python standard library and takes a few seconds. `resul
 |---|---|
 | `data/runs.csv` | One row per run: 1,524 runs, for Alone, CA and the ablation of CA's deletion check (1,350), and the comparison with GitHub Copilot code review (174). |
 | `data/detection.csv` | One row per planted defect (31): PR identifier, defect number within the PR, defect type, language, and for CA and each free tool run out of the box whether it detected the defect (`yes`, `partial` when only some of the affected lines were reported, or `no`). |
-| `analyze.py` | Recomputes Tables 2 to 9 of the paper, the scorer and checker agreement, and the Copilot sensitivity check. |
+| `analyze.py` | Recomputes Tables 2 to 11 of the paper, including the build and feature check (Tables 8 and 9), the scorer and checker agreement, and the Copilot sensitivity check. |
 | `results.md` | Output of `analyze.py`. |
 
 ## Columns of `data/runs.csv`
@@ -33,8 +33,14 @@ The script uses only the Python standard library and takes a few seconds. `resul
 | `cost_usd` | Total model cost of the run at list API prices, November 2026: the agent's cost as reported by Claude Code, plus the checker's own cost in CA workflows. |
 | `lines_changed` | Lines changed by the final commit, for clean PRs only. |
 | `checker_verdict` | Alone and ablation runs on defective PRs only: the checker's own verdict on the final commit (`gone`, `not gone`, or `missing`). Used only for the agreement figure. |
+| `build_check` | Runs scored `repaired` on defective PRs only: the result of the build and feature check of the final commit (Section 4.6 of the paper). `passed`, `does not compile` (only errors absent from the PR's own head are counted), `feature removed in place` (the behaviour the PR added was deleted while its file was kept) or `stub`. Empty for all other runs. |
 
 One PR has no `Copilot review` rows, because Copilot repeatedly failed to review it. The paper explains why, and `analyze.py` reports a sensitivity check that scores it as repaired in all three runs or in none.
+
+## Changes in version 2
+
+- One PR (PR-25) was missing the list of files it adds from its scorer specification, so its deletion was not detected. Three runs with that file deleted (two Sonnet 5.5 alone, one Haiku 4.5 with the deletion check off) changed from `repaired` to `removed feature`, as the paper's rules require.
+- New column `build_check` and Tables 8 and 9 for the build and feature check. The Copilot comparison and the detection table are now Tables 10 and 11, as in version 2 of the paper.
 
 ## What this supplement does and does not allow
 
