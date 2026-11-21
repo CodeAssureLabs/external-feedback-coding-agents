@@ -11,6 +11,7 @@ Conventions (as in the paper):
 - Bootstraps: 10,000 resamples of PRs, seed 20261112, values sorted first, so a configuration has the same interval
   in every table.
 - Cost per change = mean over runs of the total cost (agent, plus the checker in CA workflows).
+- Build-checked repair (Section 4.6): outcome "repaired" and build_check "passed".
 """
 import collections, csv, math, os, random, statistics as st
 
@@ -146,11 +147,11 @@ for m in MODELS:
     P = paired(runs("main", m, "CA"), runs("main", m, "CA, deletion check off"), fixed)
     out.append(f"| {m} CA vs CA with the check off | {100 * P['diff'][0]:+.0f} pts [{100 * P['diff'][1]:.0f}, {100 * P['diff'][2]:.0f}] | {P['a_only']} / {P['b_only']} | {pv(P['perm'])} | {pv(P['mcnemar'])} |")
 
-# Table 8
+# Table 10
 def wf_runs(m, wf, clean=False):
     if wf in ("alone", "CA"): return runs("main", m, wf, clean)
     return runs("comparison", m, wf, clean)
-out += ["\n## Table 8. Comparison with GitHub Copilot code review (Haiku and Sonnet)\n", "| model | workflow | repair rate (Wilson) | removed | clean: code edits / runs | vs CA: A only / B only, PR-level p |", "|---|---|---|---|---|---|"]
+out += ["\n## Table 10. Comparison with GitHub Copilot code review (Haiku and Sonnet)\n", "| model | workflow | repair rate (Wilson) | removed | clean: code edits / runs | vs CA: A only / B only, PR-level p |", "|---|---|---|---|---|---|"]
 for m in ("Haiku 4.5", "Sonnet 5.5"):
     D = wf_runs(m, "CA")
     for wf in ("alone", "Copilot review", "CA"):
@@ -174,17 +175,47 @@ for m in ("Haiku 4.5", "Sonnet 5.5"):
         k = sum(map(fixed, fake))
         out.append(f"| {m} | {'repaired' if assume else 'not repaired'} | {k}/{len(fake)} = {100 * k / len(fake):.0f}% | {pv(paired(fake, wf_runs(m, 'alone'), fixed)['perm'])} | {pv(paired(fake, wf_runs(m, 'CA'), fixed)['perm'])} |")
 
-# Table 9: detection of the 31 planted defects by tools run out of the box (data/detection.csv)
+# Table 11: detection of the 31 planted defects by tools run out of the box (data/detection.csv)
 DET = list(csv.DictReader(open(os.path.join(HERE, "data", "detection.csv"))))
 SCOPE = {"CA": None, "rust_build_clippy": {"rust"}, "semgrep": None, "pylint": {"python"}, "sonarqube_community": {"python", "typescript", "java"},
          "ruff": {"python"}, "eslint": {"typescript"}, "clang_tidy": {"cpp"}, "cppcheck": {"cpp"}, "pmd": {"java"}}
 hit = lambda r, t: r[t] in ("yes", "partial")
-out += ["\n## Table 9. Detection of the planted defects by tools run out of the box\n",
+out += ["\n## Table 11. Detection of the planted defects by tools run out of the box\n",
         "| tool | in scope | detected (of which partial) | missed in scope | not covered | not caught (of 31) |", "|---|---|---|---|---|---|"]
 for t, langs in SCOPE.items():
     ins = [r for r in DET if langs is None or r["language"] in langs]; k = sum(hit(r, t) for r in ins)
     out.append(f"| {t} | {len(ins)} | {k} ({sum(r[t] == 'partial' for r in ins)}) | {len(ins) - k} | {len(DET) - len(ins)} | {len(DET) - k} |")
 free = [t for t in SCOPE if t != "CA"]; u = sum(any(hit(r, t) for t in free) for r in DET)
 out.append(f"| all free tools together | {len(DET)} | {u} | {len(DET) - u} | 0 | {len(DET) - u} |")
+
+# Tables 8 and 9: build and feature check of every run scored as repaired on a defective PR (column build_check)
+built = lambda r: fixed(r) and r["build_check"] == "passed"
+LANG = {r["pr"]: r["language"] for r in DET}
+rep_rs = [r for r in RUNS if fixed(r) and r["defect_type"] != "clean"]
+out += ["\n## Table 8. Build and feature check by language (runs scored as repaired, all workflows; last column +CA only)\n",
+        "| language | checked | do not compile | removed in place or stub | failed with +CA |", "|---|---|---|---|---|"]
+for lang in ("java", "typescript", "python", "cpp", "rust"):
+    rs = [r for r in rep_rs if LANG[r["pr"]] == lang]; ca = [r for r in rs if r["workflow"] == "CA"]
+    out.append(f"| {lang} | {len(rs)} | {sum(r['build_check'] == 'does not compile' for r in rs)} | "
+               f"{sum(r['build_check'] in ('feature removed in place', 'stub') for r in rs)} | {sum(r['build_check'] != 'passed' for r in ca)} of {len(ca)} |")
+out.append(f"| total | {len(rep_rs)} | {sum(r['build_check'] == 'does not compile' for r in rep_rs)} | "
+           f"{sum(r['build_check'] in ('feature removed in place', 'stub') for r in rep_rs)} | "
+           f"{sum(r['build_check'] != 'passed' for r in rep_rs if r['workflow'] == 'CA')} of {sum(r['workflow'] == 'CA' for r in rep_rs)} |")
+out += ["\n## Table 9. Repair rate under the static scorer and after the build and feature check, defective PRs\n",
+        "| model | workflow | static scorer | build-checked |", "|---|---|---|---|"]
+for m in MODELS:
+    for wf in ("alone", "CA", "CA, deletion check off", "Copilot review"):
+        rs = runs("comparison" if wf == "Copilot review" else "main", m, wf)
+        if rs: out.append(f"| {m} | {wf} | {sum(map(fixed, rs))}/{len(rs)} | {sum(map(built, rs))}/{len(rs)} |")
+out += ["\n### Paired comparisons, build-checked repair rate\n", "| A vs B | mean difference [95%] | A only / B only | PR-level p | McNemar p |", "|---|---|---|---|---|"]
+for (ma, wa), (mb, wb) in [(("Haiku 4.5", "CA"), ("Haiku 4.5", "alone")), (("Sonnet 5.5", "CA"), ("Sonnet 5.5", "alone")), (("Fable 5.1", "CA"), ("Fable 5.1", "alone")),
+                           (("Sonnet 5.5", "CA"), ("Fable 5.1", "alone")), (("Haiku 4.5", "CA"), ("Fable 5.1", "alone")),
+                           (("Haiku 4.5", "CA"), ("Haiku 4.5", "CA, deletion check off")), (("Sonnet 5.5", "CA"), ("Sonnet 5.5", "CA, deletion check off")),
+                           (("Fable 5.1", "CA"), ("Fable 5.1", "CA, deletion check off")),
+                           (("Haiku 4.5", "CA"), ("Haiku 4.5", "Copilot review")), (("Sonnet 5.5", "CA"), ("Sonnet 5.5", "Copilot review"))]:
+    P = paired(wf_runs(ma, wa) if wa != "CA, deletion check off" else runs("main", ma, wa), wf_runs(mb, wb) if wb != "CA, deletion check off" else runs("main", mb, wb), built)
+    out.append(f"| {ma} {wa} vs {mb} {wb} | {100 * P['diff'][0]:+.0f} pts [{100 * P['diff'][1]:.0f}, {100 * P['diff'][2]:.0f}] | {P['a_only']} / {P['b_only']} | {pv(P['perm'])} | {pv(P['mcnemar'])} |")
+ca_all = [r for m in MODELS for r in runs("main", m, "CA")]; al_all = [r for m in MODELS for r in runs("main", m, "alone")]
+out.append(f"\nRuns repaired and passing the check: CA {sum(map(built, ca_all))}/{len(ca_all)}, alone {sum(map(built, al_all))}/{len(al_all)}.")
 
 print("\n".join(out))
