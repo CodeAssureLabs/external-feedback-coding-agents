@@ -202,11 +202,13 @@ out.append(f"| total | {len(rep_rs)} | {sum(r['build_check'] == 'does not compil
            f"{sum(r['build_check'] in ('feature removed in place', 'stub') for r in rep_rs)} | "
            f"{sum(r['build_check'] != 'passed' for r in rep_rs if r['workflow'] == 'CA')} of {sum(r['workflow'] == 'CA' for r in rep_rs)} |")
 out += ["\n## Table 9. Repair rate under the static scorer and after the build and feature check, defective PRs\n",
-        "| model | workflow | static scorer | build-checked |", "|---|---|---|---|"]
+        "| model | workflow | static scorer | build-checked (Wilson) | build-checked cluster bootstrap |", "|---|---|---|---|---|"]
 for m in MODELS:
     for wf in ("alone", "CA", "CA, deletion check off", "Copilot review"):
         rs = runs("comparison" if wf == "Copilot review" else "main", m, wf)
-        if rs: out.append(f"| {m} | {wf} | {sum(map(fixed, rs))}/{len(rs)} | {sum(map(built, rs))}/{len(rs)} |")
+        if rs:
+            k = sum(map(built, rs)); bb = boot(list(per_pr(rs, built).values()))
+            out.append(f"| {m} | {wf} | {sum(map(fixed, rs))}/{len(rs)} | {k}/{len(rs)} = {pct(wilson(k, len(rs)))} | [{100 * bb[1]:.0f}, {100 * bb[2]:.0f}] |")
 out += ["\n### Paired comparisons, build-checked repair rate\n", "| A vs B | mean difference [95%] | A only / B only | PR-level p | McNemar p |", "|---|---|---|---|---|"]
 for (ma, wa), (mb, wb) in [(("Haiku 4.5", "CA"), ("Haiku 4.5", "alone")), (("Sonnet 5.5", "CA"), ("Sonnet 5.5", "alone")), (("Fable 5.1", "CA"), ("Fable 5.1", "alone")),
                            (("Sonnet 5.5", "CA"), ("Fable 5.1", "alone")), (("Haiku 4.5", "CA"), ("Fable 5.1", "alone")),

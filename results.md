@@ -126,19 +126,19 @@ Runs with both verdicts: 748. Agreement 94.8%, Cohen's kappa 0.84. Checker gone,
 
 ## Table 9. Repair rate under the static scorer and after the build and feature check, defective PRs
 
-| model | workflow | static scorer | build-checked |
-|---|---|---|---|
-| Haiku 4.5 | alone | 35/125 | 32/125 |
-| Haiku 4.5 | CA | 107/125 | 86/125 |
-| Haiku 4.5 | CA, deletion check off | 89/125 | 67/125 |
-| Haiku 4.5 | Copilot review | 29/72 | 23/72 |
-| Sonnet 5.5 | alone | 59/125 | 57/125 |
-| Sonnet 5.5 | CA | 118/125 | 113/125 |
-| Sonnet 5.5 | CA, deletion check off | 92/125 | 87/125 |
-| Sonnet 5.5 | Copilot review | 33/72 | 33/72 |
-| Fable 5.1 | alone | 56/125 | 56/125 |
-| Fable 5.1 | CA | 125/125 | 116/125 |
-| Fable 5.1 | CA, deletion check off | 108/125 | 106/125 |
+| model | workflow | static scorer | build-checked (Wilson) | build-checked cluster bootstrap |
+|---|---|---|---|---|
+| Haiku 4.5 | alone | 35/125 | 32/125 = 26% [19, 34] | [11, 41] |
+| Haiku 4.5 | CA | 107/125 | 86/125 = 69% [60, 76] | [54, 82] |
+| Haiku 4.5 | CA, deletion check off | 89/125 | 67/125 = 54% [45, 62] | [40, 67] |
+| Haiku 4.5 | Copilot review | 29/72 | 23/72 = 32% [22, 43] | [17, 49] |
+| Sonnet 5.5 | alone | 59/125 | 57/125 = 46% [37, 54] | [28, 63] |
+| Sonnet 5.5 | CA | 118/125 | 113/125 = 90% [84, 94] | [79, 99] |
+| Sonnet 5.5 | CA, deletion check off | 92/125 | 87/125 = 70% [61, 77] | [54, 84] |
+| Sonnet 5.5 | Copilot review | 33/72 | 33/72 = 46% [35, 57] | [28, 64] |
+| Fable 5.1 | alone | 56/125 | 56/125 = 45% [36, 54] | [28, 62] |
+| Fable 5.1 | CA | 125/125 | 116/125 = 93% [87, 96] | [83, 100] |
+| Fable 5.1 | CA, deletion check off | 108/125 | 106/125 = 85% [77, 90] | [70, 96] |
 
 ### Paired comparisons, build-checked repair rate
 
